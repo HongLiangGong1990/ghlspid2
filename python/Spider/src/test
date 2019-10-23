@@ -1,0 +1,11 @@
+import pandas as pd
+
+# info=pd.read_csv('taobao.csv',encoding='utf-8',usecols=[27])
+# for i in info:
+#     print(i)
+#
+# import pandas as pd
+data = pd.read_csv('taobao.csv',encoding='utf-8')
+data[u'销售量和成功交易量'] = data[u'销售量和成功交易量'].astype(str)
+data[u'销售量和成功交易量'] = data[u'销售量和成功交易量'].apply(lambda x :x.split(' ')[-1])
+data.to_csv('price.csv',index=False, encoding='utf-8')

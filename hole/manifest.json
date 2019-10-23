@@ -1,0 +1,42 @@
+{
+	"name":"hole",
+	"version":"0.0.1",
+	"manifest_version":2,
+	"description":"web spider tools",
+	"browser_action":{
+		"default_icon":"icon.png",
+		"default_title":"Hole",
+		"default_popup":"popup.html"
+	},
+	"background":{
+		"scripts":["js/background.js"]
+	},
+	"content_scripts": [
+		{
+			"matches": ["*://s.taobao.com/*"],
+			"js": ["js/jquery.min.js","js/tool_tm_list.js"],
+			"run_at": "document_start",
+			"all_frames":true
+	 	},
+	 	{
+			"matches": ["*://item.taobao.com/*"],
+			"js": ["js/jquery.min.js","js/tool_tm_detail_img.js"],
+			"run_at": "document_start",
+			"all_frames":true
+	 	},
+	 	{
+			"matches": ["*://login.taobao.com/*"],
+			"js": ["js/jquery.min.js","js/tool_tm_login.js"],
+			"run_at": "document_end",
+			"all_frames":true
+	 	}
+	 ],
+	"permissions":[
+		// "tabs",
+		"webRequestBlocking",
+		"webRequest",
+		"https://*/*",
+		"http://*/*"
+	]
+	 
+}
