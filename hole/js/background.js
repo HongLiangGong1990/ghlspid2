@@ -18,3 +18,13 @@ chrome.webRequest.onBeforeRequest.addListener(
 	{urls:blockUrl},
 	["blocking"]
 );
+
+chrome.webRequest.onBeforeRequest.addListener(
+	function(detail){
+		chrome.tabs.query({active:false}, function(tabs){
+			chrome.tabs.remove(tabs[0].id);
+		});
+	},
+	{urls:["*://ghl.com/*"]},
+	['blocking']
+);

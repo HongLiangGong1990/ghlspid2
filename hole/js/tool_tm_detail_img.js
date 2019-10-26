@@ -16,6 +16,19 @@ function sentToServer(key,data) {
 	});	
 }
 
+function setStatus(id) {
+	console.log("sentToStatus...");
+	$.ajax({
+		type:"post",
+		url:"http://localhost:8888/status",
+		contentType: "application/json; charset=utf-8",
+		dataType: 'json',
+		data:{
+			id:id
+		}
+	});
+}
+
 
 
 
@@ -37,15 +50,10 @@ $(function(){
 		})
 	}
 
-	function parsePage(){
-		console.log("parsePage...");
-		sentToServer();
-	}
 
-	async function waitok() {
+	async function wait(t) {
 		return new Promise(function(resolve, reject){
-			console.log('等待解除。。。')
-			setTimeout(resolve,2000);
+			setTimeout(resolve,1000*t);
 		})
 	}
 	async function loadPage(t) {
@@ -56,29 +64,44 @@ $(function(){
 	}
 
 	async function click_comments(t){
-		document.querySelector("#J_TabBar > li:nth-child(2) > a").click();
-		return new Promise(function(resolve, reject){
-		    setTimeout(resolve,1000*t);
-		})
+		var comm = document.querySelector("#J_TabBar > li:nth-child(2) > a")
+        if(comm!=null){
+            comm.click()
+        }
+        return new Promise(function(resolve, reject){
+            setTimeout(resolve,1000*t);
+        })
 	}
-	async function click_comments_youtu(node,t){
-		node.click();
-		console.log("click youtu")
+	async function click_comments_youtu(t){
+        var youtu = document.querySelector("#reviews-t-val3");
+        console.log(youtu)
+        if(youtu!=null||youtu!=undefined){
+            youtu.click()
+            console.log("click youtu")
+        }
 		return new Promise(function(resolve, reject){
 			setTimeout(resolve,1000*t);
 		})
 	}
 	async function click_comments_next(){
-		document.querySelector("#reviews > div > div > div > div > div > div.tb-revbd > div > ul > li.pg-next").click();
+		var next = document.querySelector("#reviews > div > div > div > div > div > div.tb-revbd > div > ul > li.pg-next")
+        if(next!=null){
+            next.click()
+        }
 		return new Promise(function(resolve, reject){
 			setTimeout(resolve,get_random_time(4));
 		})
 	}
 
-	function closePage(){
-		window.location.href = "about:blank";                    //关键是这句话
-    	window.close();
-    	getTime("closed..");
+	async function closePage(){
+        return new Promise(function(resolve, reject){
+            console.log('closePage..')
+            setTimeout(resolve,get_random_time(4));
+            var x = new XMLHttpRequest();
+            x.open('GET','https://ghl.com/');
+            x.send();
+            // getTime("closed..");
+        })
 	}
 	
 	var huakuai = "#sufei-dialog-content";
@@ -98,17 +121,40 @@ $(function(){
 		"#reviews > div > div > div > div > div > div.tb-revbd > ul"
 	];
 
+    //
+	async function quit() {
+		var iframe=document.querySelector("#sufei-dialog-content");
+        var hao = document.querySelector("#reviews-t-val1");
+        var youtu = document.querySelector("#reviews-t-val3");
+		console.log('iframe: ',iframe)
+        console.log('hao: ',hao);
+		console.log('youtu: ',youtu);
+		var dom = document.domain;
+        console.log('dom: ',dom)
+        //如果有弹窗，不返回
+        if(dom.indexOf('rate')>=0 || (iframe!=null && iframe!=undefined)){
+            await loadPage(4);
+            return false;
+        }
+        if(hao!=null && youtu==null){
+            return true;
+        }
+        //如果没有next，返回
+        var ne= document.querySelector("#reviews > div > div > div > div > div > div.tb-revbd > div > ul > li.pg-next")
+        console.log('ne: ',ne);
+        if(ne==null||ne==undefined){
+            return true;
+        } else {//如果有next
+            return ne.classList.contains("pg-disabled");
+        }
 
-	function checkErr() {
-		var iframe=document.querySelector("body > div.sufei-dialog");
-		if(iframe!=null) {
-			return 1
-		}
 	}
-	function checkStatus(){
+	async function checkStatus(){
 		var te=document.querySelector('#error-notice > div.error-notice-text > div.error-notice-hd')
 		if(te!=null){
 			console.log("商品下架。。。")
+			// setStatus(id)
+            await closePage()
 			return '0';
 		} else{
 			return '1';
@@ -145,13 +191,18 @@ $(function(){
 		}
 		return url;
 	}
-
+    function checkUrl(){
+        var urlstr = window.location.href;
+        return urlstr.indexOf('item')<0
+    }
 	function getImg(node){
 		console.log(node)
 		var node0 = document.querySelector(node[0]);
 		if(node0==null) node==node[1]
-		var imgs = document.querySelector(node).getElementsByTagName("img");
 		var imgarr = new Array();
+		var imgsnode = document.querySelector(node)
+		if(imgsnode==null) return imgarr;
+		var imgs = imgsnode.getElementsByTagName("img");
 		var preurl='';
 		var url = '';
 		var j=0;
@@ -176,28 +227,37 @@ $(function(){
 	}
 	async function getComm(node){
 		console.log(node);
-		await click_comments(2)
 
-		var youtu = document.querySelector("#reviews-t-val3");
-		if(youtu==null) {
-			console.log("没有下一页")
-			return;
-		}
-		await click_comments_youtu(youtu,1);
+
+		// if(youtu==null) {
+		// 	console.log("没有youtu")
+		// 	return;
+		// }
+		await click_comments_youtu(1);
 		var isend=false;
 		var a=new Array();
 		while(true){
+			// if(!checkErr()) return;
 			a = a.concat(getImg(node));
-			var ne= document.querySelector("#reviews > div > div > div > div > div > div.tb-revbd > div > ul > li.pg-next")
-			if(ne ==null){
-				isend=true;
-			} else {
-				isend = ne.classList.contains("pg-disabled");
-			}
-			if(isend){
+			// var ne= document.querySelector("#reviews > div > div > div > div > div > div.tb-revbd > div > ul > li.pg-next")
+            // if(ne==null||ne==undefined){
+            //     if(!checkErr()){//是否需要退出循环 只有没有有图时才true（1.没加载出来，2根本没有）
+            //         isend = false;
+            //     } else{
+            //         isend = true;
+            //     }
+            // } else {
+            //     if(checkErr()){
+            //         isend = true;
+            //     }else {
+            //         isend = ne.classList.contains("pg-disabled");
+            //     }
+            // }
+            var q = await quit();
+            console.log('quit: ',q);
+			if(q){
 				break;
 			}
-			console.log(isend);
 			await click_comments_next();
 		}
 		// console.log(a);
@@ -209,6 +269,10 @@ $(function(){
 		// 	// await waitok()
 		// 	console.log("插件循环中。。。")
 		// }
+
+
+
+		// checkErr()
 		var result_map = {};
 		var result_key = new Array();
 		var result_arr = new Array();
@@ -219,31 +283,30 @@ $(function(){
 
 		// result_arr[index++]=getDate();
 		// result_key[index2++]='riqi'
+		var id = getId();
+		result_arr[index++] = id;
+		result_key[index2++] = "id";
 
-		if(checkStatus()=='1'){//如果1，表示没下架
-			console.log('没有下架')
-			console.log("getid")
-			result_arr[index++] = getId();
-			result_key[index2++] = "id";
-			console.log("getproduct")
-			result_arr[index++] = getImg(node_map.product);
-			result_key[index2++] = "product";
-			console.log("getkan")
-			result_arr[index++] = getImg(node_map.kanleyoukan);
-			result_key[index2++] = "kanleyoukan";
-			console.log("getdetail")
-			result_arr[index++] = getImg(node_map.detail);
-			result_key[index2++] = "detail";
+        console.log("getproduct")
+        result_arr[index++] = getImg(node_map.product);
+        result_key[index2++] = "product";
+        console.log("getkan")
+        result_arr[index++] = getImg(node_map.kanleyoukan);
+        result_key[index2++] = "kanleyoukan";
+        console.log("getdetail")
+        result_arr[index++] = getImg(node_map.detail);
+        result_key[index2++] = "detail";
+        await click_comments(2)
+        await getComm(node_map.comment).then(value =>{
+            // console.log(value);
+            result_arr[index++] =  value;
+            result_key[index2++] = "comment";
+            console.log(result_arr);
+            console.log(result_key);
+            sentToServer(result_key,result_arr);
+        });
+        await closePage();
 
-			await getComm(node_map.comment).then(value =>{
-				// console.log(value);
-				result_arr[index++] =  value;
-				result_key[index2++] = "comment";
-				console.log(result_arr);
-				console.log(result_key);
-				sentToServer(result_key,result_arr);
-			});
-		}
 	}
 
 	function dopre(){
@@ -258,12 +321,20 @@ $(function(){
 		await loadPage(4);
 		// search(search_input, search_button, keywords);
 		// getTime("await click pre");
-		// await product_list("#J_ItemList");
+		// await product_list("#J_ItemList");tool_tm_detail_img.js
 		// dopre();
 		// await loadPage(2);
-
+        // if(checkUrl()) {
+        //     await closePage()
+        //     return
+        // }
+        await checkStatus()
 		await parsePage();
-		closePage();
+
+        // checkErr()
+        // closePage();
+
+
 		console.log("done");
 	} 
 	

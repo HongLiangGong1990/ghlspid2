@@ -232,6 +232,44 @@ async function getT(a){
     alert(a)
     return 'aaa'
 }
+/*
+page：整个页面
+iframe:验证框
+btn:鼠标点击的按钮
+refresh:失败后点击重连的
+retries:失败后重试次数，如果超过还未成功就放弃
+*/
+// async function slider(page:any, ifram:any,btn:any,refresh:any,retries:any){
+async function slider(page:any){
+    await page.waitFor(3000)
+    const start = await page.waitForSelector('#sufei-dialog-content',{timeout:5000})
+    const fram = await page.frames().find(f=>f.name()==='sufei-dialog-content');
+    await page.waitFor(700)
+    let html = await fram.$eval('#nc_1__scale_text',e=>e.innerText)
+    console.log(html)
+    let but = await fram.$('#nc_1_n1z')
+    let loc = await but.boundingBox();
+    console.log(loc.x,loc.y)
+    await page.waitFor(36)
+    await page.mouse.move(loc.x+20,loc.y+15)
+    await page.waitFor(20)
+    await page.mouse.down()
+    await page.mouse.move(loc.x+25,loc.y+12,{steps:10})
+    await page.waitFor(13)
+    await page.mouse.move(loc.x+22,loc.y+12)
+    await page.waitFor(30)
+    await page.mouse.move(loc.x+32,loc.y+12,{steps:5})
+    await page.waitFor(20)
+    await page.mouse.move(loc.x+80,loc.y+20,{ steps: 20 })
+    await page.waitFor(33)
+    await page.mouse.move(loc.x+230,loc.y+19,{ steps: 16 })
+    await page.waitFor(23)
+    await page.mouse.move(loc.x+220,loc.y+12,{steps:5})
+    await page.waitFor(123)
+    await page.mouse.move(loc.x+305,loc.y+32,{steps:35})
+    await page.waitFor(23)
+    await page.mouse.down()
+}
 async function main(){
     let ws = await get_debug_url();
     console.log(ws);
@@ -243,368 +281,46 @@ async function main(){
                                                 }
                                             });
 
-    let list = await getIdsFromServer(33);
-    for (let id of list) {
-        console.log(id);
-        const page = await browser.newPage();
-        page.setDefaultTimeout(500)
-        await Promise.all ( [
-                                page.setJavaScriptEnabled ( true ) ,	//  允许执行 js 脚本
-                            ] ) ;
-        await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.2.1.min.js'})
-        await page.goto('https://item.taobao.com/item.htm?id='+id,{timeout:5000});
-        console.log('evaluate7...')
-         await page.evaluate(`(async() => {
-            
-function sentToServer(key,data) {
-\tconsole.log("sentToServer...");
-\t// var text = document.querySelector("html").outerHTML;
-\t// console.log(text);
-\t// var html = "gsgdsgg";
-\t$.ajax({
-\t\ttype:"post",
-\t\turl:"http://localhost:8888/receiveimg",
-\t\tcontentType: "application/json; charset=utf-8",
-\t\tdataType: 'json',
-\t\tdata:JSON.stringify({
-\t\t\tkey:key,
-\t\t\turls:data
-\t\t})
-\t});\t
-}
-
-
-
-
-function get_random_time(t){
-\tvar time = Math.floor((Math.random()*1000*t)+1000);
-\treturn time;
-}
-
-function getTime(text){
-\tvar myDate = new Date();
-\tconsole.log(text,myDate.toLocaleTimeString());
-}
-
-$(function(){
-\tasync function loadPage(t) {
-\t\treturn new Promise(function(resolve, reject){
-\t\t\tconsole.log("loadPage...");
-\t\t    setTimeout(resolve,1000*t);
-\t\t})
-\t}
-
-\tfunction parsePage(){
-\t\tconsole.log("parsePage...");
-\t\tsentToServer();
-\t}
-
-\tasync function waitok() {
-\t\treturn new Promise(function(resolve, reject){
-\t\t\tconsole.log('等待解除。。。')
-\t\t\tsetTimeout(resolve,2000);
-\t\t})
-\t}
-\tasync function loadPage(t) {
-\t\treturn new Promise(function(resolve, reject){
-\t\t\tconsole.log("loadPage...");
-\t\t    setTimeout(resolve,1000*t);
-\t\t})
-\t}
-
-\tasync function click_comments(t){
-\t\tdocument.querySelector("#J_TabBar > li:nth-child(2) > a").click();
-\t\treturn new Promise(function(resolve, reject){
-\t\t    setTimeout(resolve,1000*t);
-\t\t})
-\t}
-\tasync function click_comments_youtu(node,t){
-\t\tnode.click();
-\t\tconsole.log("click youtu")
-\t\treturn new Promise(function(resolve, reject){
-\t\t\tsetTimeout(resolve,1000*t);
-\t\t})
-\t}
-\tasync function click_comments_next(){
-\t\tdocument.querySelector("#reviews > div > div > div > div > div > div.tb-revbd > div > ul > li.pg-next").click();
-\t\treturn new Promise(function(resolve, reject){
-\t\t\tsetTimeout(resolve,get_random_time(4));
-\t\t})
-\t}
-
-\tfunction closePage(){
-\t\twindow.location.href = "about:blank";                    //关键是这句话
-    \twindow.close();
-    \tgetTime("closed..");
-\t}
-\t
-\tvar huakuai = "#sufei-dialog-content";
-\tvar node_map = {};
-\t//企业
-\tnode_map.product=[
-\t\t\t"#J_UlThumb"
-\t\t];
-\tnode_map.kanleyoukan=[
-\t\t"#J_Pine > div > div.tuijian-bd.tb-clearfix > ul",
-\t\t"#J_Pinus_Enterprise_Module > div > div > ul"
-\t];
-\tnode_map.detail=[
-\t\t"#J_DivItemDesc"
-\t];
-\tnode_map.comment=[
-\t\t"#reviews > div > div > div > div > div > div.tb-revbd > ul"
-\t];
-
-
-\tfunction checkErr() {
-\t\tvar iframe=document.querySelector("body > div.sufei-dialog");
-\t\tif(iframe!=null) {
-\t\t\treturn 1
-\t\t}
-\t}
-\tfunction checkStatus(){
-\t\tvar te=document.querySelector('#error-notice > div.error-notice-text > div.error-notice-hd')
-\t\tif(te!=null){
-\t\t\tconsole.log("商品下架。。。")
-\t\t\treturn '0';
-\t\t} else{
-\t\t\treturn '1';
-\t\t}
-\t}
-
-
-\tfunction getDate(){
-\t\tvar myd = new Date();
-\t\treturn myd.toLocaleDateString();
-\t}
-
-\tfunction getId(){
-\t\tvar urlstr = window.location.href;
-\t\tvar id= urlstr.substr(urlstr.indexOf('id=')+3,17).replace(/[^0-9]+/g, '');
-\t\tconsole.log('id:',id);
-\t\tvar a = new Array();
-\t\ta[0] = id;
-\t\treturn a;
-\t}
-
-\tfunction change(url){
-\t\tif(url==null ||url=='') return null;
-\t\tif(url.indexOf("imgextra")<0 && url.indexOf("uploaded")<0) return null;
-\t\turl = url.replace('_.webp','');
-\t\tif(url.indexOf('40x40')>=0) {
-\t\t\treturn url.replace('40x40','400x400');
-\t\t}
-\t\tif(url.indexOf('50x50')>=0) {
-\t\t\treturn url.replace('50x50','400x400');
-\t\t}
-\t\tif(url.indexOf('80x80')>=0) {
-\t\t\treturn url.replace('80x80','400x400');
-\t\t}
-\t\treturn url;
-\t}
-
-\tfunction getImg(node){
-\t\tconsole.log(node)
-\t\tvar node0 = document.querySelector(node[0]);
-\t\tif(node0==null) node==node[1]
-\t\tvar imgs = document.querySelector(node).getElementsByTagName("img");
-\t\tvar imgarr = new Array();
-\t\tvar preurl='';
-\t\tvar url = '';
-\t\tvar j=0;
-\t\tfor(i=0;i<imgs.length;i++){
-\t\t\t// console.log(imgs[i].src)
-\t\t\tif(imgs[i].getAttribute('data-ks-lazyload') !=null){
-\t\t\t\tpreurl = imgs[i].getAttribute('data-ks-lazyload');
-\t\t\t}else{
-\t\t\t\tpreurl = imgs[i].src;
-\t\t\t}
-\t\t\turl = change(preurl);
-\t\t\tif(url!=null){
-\t\t\t\timgarr[j++] = url;
-\t\t\t}
-\t\t}
-\t\treturn imgarr;
-\t}
-
-\tvar success = function(value){
-\t\tconsole.log(value);
-\t\treturn value;
-\t}
-\tasync function getComm(node){
-\t\tconsole.log(node);
-\t\tawait click_comments(2)
-
-\t\tvar youtu = document.querySelector("#reviews-t-val3");
-\t\tif(youtu==null) {
-\t\t\tconsole.log("没有下一页")
-\t\t\treturn;
-\t\t}
-\t\tawait click_comments_youtu(youtu,1);
-\t\tvar isend=false;
-\t\tvar a=new Array();
-\t\twhile(true){
-\t\t\ta = a.concat(getImg(node));
-\t\t\tvar ne= document.querySelector("#reviews > div > div > div > div > div > div.tb-revbd > div > ul > li.pg-next")
-\t\t\tif(ne ==null){
-\t\t\t\tisend=true;
-\t\t\t} else {
-\t\t\t\tisend = ne.classList.contains("pg-disabled");
-\t\t\t}
-\t\t\tif(isend){
-\t\t\t\tbreak;
-\t\t\t}
-\t\t\tconsole.log(isend);
-\t\t\tawait click_comments_next();
-\t\t}
-\t\t// console.log(a);
-\t\treturn a;
-\t}
-\tasync function parsePage(){
-\t\tconsole.log("parsePage...");
-\t\t// while(true){
-\t\t// \t// await waitok()
-\t\t// \tconsole.log("插件循环中。。。")
-\t\t// }
-\t\tvar result_map = {};
-\t\tvar result_key = new Array();
-\t\tvar result_arr = new Array();
-\t\tvar index = 0;
-\t\tvar index2 = 0;
-\t\t// result_arr[index++]=checkStatus();
-\t\t// result_key[index2++]='status';
-
-\t\t// result_arr[index++]=getDate();
-\t\t// result_key[index2++]='riqi'
-
-\t\tif(checkStatus()=='1'){//如果1，表示没下架
-\t\t\tconsole.log('没有下架')
-\t\t\tconsole.log("getid")
-\t\t\tresult_arr[index++] = getId();
-\t\t\tresult_key[index2++] = "id";
-\t\t\tconsole.log("getproduct")
-\t\t\tresult_arr[index++] = getImg(node_map.product);
-\t\t\tresult_key[index2++] = "product";
-\t\t\tconsole.log("getkan")
-\t\t\tresult_arr[index++] = getImg(node_map.kanleyoukan);
-\t\t\tresult_key[index2++] = "kanleyoukan";
-\t\t\tconsole.log("getdetail")
-\t\t\tresult_arr[index++] = getImg(node_map.detail);
-\t\t\tresult_key[index2++] = "detail";
-
-\t\t\tawait getComm(node_map.comment).then(value =>{
-\t\t\t\t// console.log(value);
-\t\t\t\tresult_arr[index++] =  value;
-\t\t\t\tresult_key[index2++] = "comment";
-\t\t\t\tconsole.log(result_arr);
-\t\t\t\tconsole.log(result_key);
-\t\t\t\tsentToServer(result_key,result_arr);
-\t\t\t});
-\t\t}
-\t}
-
-\tfunction dopre(){
-\t\tvar qiye = document.querySelector("#header-content > div.shop-summary.J_TShopSummary");
-\t\tif(qiye !=null){
-\t\t\tqiye.className += " hover";
-\t\t}
-\t}
-
-\tasync function as(){
-
-\t\tawait loadPage(4);
-\t\t// search(search_input, search_button, keywords);
-\t\t// getTime("await click pre");
-\t\t// await product_list("#J_ItemList");
-\t\t// dopre();
-\t\t// await loadPage(2);
-
-\t\tawait parsePage();
-\t\tclosePage();
-\t\tconsole.log("done");
-\t} 
-\t
-\tas();
-
-})
-         })()`)
-             // `(async() => {})()`
-        // console.log('show ',show)
-        await page.waitFor(50000)
-        // while(true){
-        //     console.log("循环中。。。")
-        //     await page.waitFor(2000)
-        // }
-        // break;
+    for (let i = 50; i < 52; i++) {
+        let list = await getIdsFromServer(i);
+        console.log('size: ',list.length)
+        console.log('第 ',i)
+        console.log('281')
+        for (let id of list) {
+            console.log(id,new Date());
+            const page = await browser.newPage();
+            try {
+                await page.goto('https://item.taobao.com/item.htm?id='+id)
+                console.log('286')
+                while(true){
+                    console.log('288')
+                    await slider(page);
+                    try{
+                        console.log('291')
+                        const start = await page.waitForSelector('#sufei-dialog-content',{timeout:500})
+                        await page.waitFor(200)
+                        const fram = await page.frames().find(f=>f.name()==='sufei-dialog-content');
+                        await page.waitFor(200)
+                        let html = await fram.$eval('body > div > div > p',e=>e.innerText)
+                        console.log(html)
+                        let shuaxin = await fram.$('#nocaptcha > div > span > a')
+                        let loc = await shuaxin.boundingBox();
+                        await page.waitFor(36)
+                        await page.mouse.move(loc.x+5,loc.y+5)
+                        await page.mouse.down()
+                        await page.mouse.up()
+                    } catch (e) {
+                        break
+                    }
+                }
+            } catch (e) {
+                console.log('slider err',new Date())
+                console.log(e)
+            }
+            // await page.close()
+            await page.waitFor(2000)
+        }
     }
 }
 main()
 
-// (async () => {
-//     let ws = await get_debug_url();
-//     console.log(ws);
-//     const browser = await puppeteer.connect({
-//         browserWSEndpoint:ws,
-//         defaultViewport: {
-//             width: 1366,
-//             height: 768
-//         }
-//     })
-//     const page = await browser.newPage();
-//     await page.goto('http://dun.163.com/trial/jigsaw',{timeout:5000});
-//     await page.addScriptTag({url: 'https://code.jquery.com/jquery-3.2.1.min.js'})
-//     console.log('evalu3')
-//     await page.evaluate(`(async(x) => {
-//        alert(x);
-//     })(${55555555})`)
-        // `((x) => {x.parseUrl("https://www.example.com:8080/test?q=1&p=2#you_and_me")})(${util})`
-    // let list = await getIdsFromServer(20);
-    // for (let id of list) {
-    //     console.log(id);
-    //     const page = await browser.newPage();
-    //     page.setDefaultTimeout(500)
-    //     await page.goto('https://item.taobao.com/item.htm?id='+id,{timeout:5000});
-    //     // await page.waitFor(4000)
-    //
-    //     let imgs = await page.$("#J_UlThumb");
-    //     // await parsePage(page,id)
-    //     break;
-    // }
-
-    // const start = await page.waitForSelector('body > main > div.g-bd > div > div.g-mn2 > div.m-tcapt > ul > li:nth-child(3)',500)
-    // let loc =await start.boundingBox();
-    // console.log(loc)
-    // await page.waitFor(1245)
-    // await page.mouse.move(loc.x+20,loc.y+15)
-    // await page.mouse.down()
-    // await page.mouse.up()
-    // const login = await page.waitForSelector('body > main > div.g-bd > div > div.g-mn2 > div.m-tcapt > div.tcapt-type__container > div.tcapt-type__item.active > div > div > div.tcapt_content > div.u-fitem.u-fitem-capt > button',500)
-    // let loc1 =await login.boundingBox();
-    // console.log(loc1)
-    // await page.mouse.move(loc1.x,loc1.y+5)
-    // await page.waitFor(1245)
-    // await page.mouse.down()
-    // await page.waitFor(467)
-    // await page.mouse.up()
-    // await page.waitFor(1245)
-    //
-    // const slid = await page.waitForSelector('body > main > div.g-bd > div > div.g-mn2 > div.m-tcapt > div.tcapt-type__container > div.tcapt-type__item.active > div > div > div.yidun_popup--light.yidun_popup.yidun_popup--appendto > div.yidun_modal__wrap > div > div > div.yidun_modal__body > div > div.yidun_control > div.yidun_slider',500)
-    // let loc2 =await slid.boundingBox();
-    // console.log(loc2)
-    // await page.mouse.move(loc2.x,loc2.y+5)
-    // await page.waitFor(467)
-    // await page.mouse.down()
-    // await page.waitFor(235)
-    // await page.mouse.move(loc2.x+3,loc2.y+10)
-    // await page.waitFor(235)
-    // await page.mouse.move(loc2.x+4,loc2.y+10)
-    // await page.waitFor(467)
-    // // await page.mouse.down()
-    // await page.mouse.move(loc2.x+7,loc2.y+3)
-    // await page.waitFor(467)
-    // await page.mouse.move(loc.x+3,loc.y+10)
-    // await page.waitFor(235)
-    // await page.mouse.move(loc.x+7,loc.y+10)
-    // await page.waitFor(634)
-    // await page.mouse.up()
-// })()

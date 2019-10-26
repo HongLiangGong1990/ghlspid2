@@ -19,7 +19,7 @@
 			"all_frames":true
 	 	},
 	 	{
-			"matches": ["*://item.taobao.com/*"],
+			"matches": ["*://*.taobao.com/*"],
 			"js": ["js/jquery.min.js","js/tool_tm_detail_img.js"],
 			"run_at": "document_start",
 			"all_frames":true
@@ -32,7 +32,7 @@
 	 	}
 	 ],
 	"permissions":[
-		// "tabs",
+		 "tabs",
 		"webRequestBlocking",
 		"webRequest",
 		"https://*/*",
