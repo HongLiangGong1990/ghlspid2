@@ -18,7 +18,12 @@ retries:失败后重试次数，如果超过还未成功就放弃
 // async function slider(page:any, ifram:any,btn:any,refresh:any,retries:any){
 async function slider_login(page:any){
     await page.waitFor(3000)
-    const start = await page.waitForSelector('#nc_1_n1t',{timeout:10000})
+    try{
+        const start = await page.waitForSelector('#nc_1_n1t',{timeout:5000,visible:true})
+    } catch (e) {
+        console.log(e);
+        return;
+    }
     const fram = await page.frames()[0]
     let html = await fram.$eval('#nc_1__scale_text',e=>e.innerText)
     console.log(html)
@@ -124,7 +129,8 @@ async function main(){
     await slider_login(page);
     //newPage是打开新tab页
     // const page2 = await browser.newPage();
-    await page.goto("https://www.baidu.com");
+    // await page.goto("https://www.baidu.com");
+    await page.click('#login-form > div.fm-btn > button')
     console.log(4646);
 }
 main();
