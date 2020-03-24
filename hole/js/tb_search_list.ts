@@ -16,6 +16,46 @@ refresh:失败后点击重连的
 retries:失败后重试次数，如果超过还未成功就放弃
 */
 // async function slider(page:any, ifram:any,btn:any,refresh:any,retries:any){
+async function slider_login(page:any){
+    await page.waitFor(3000)
+    const start = await page.waitForSelector('#nc_1_n1t',{timeout:10000})
+    const fram = await page.frames()[0]
+    let html = await fram.$eval('#nc_1__scale_text',e=>e.innerText)
+    console.log(html)
+    let but = await fram.waitForSelector('#nc_1_wrapper',{visible: true})
+    // console.log(html)
+    //如果元素not visible loc就是null
+    let loc = await but.boundingBox();
+    console.log(loc.x,loc.y)
+    await page.waitFor(36)
+    await page.mouse.move(loc.x+20,loc.y+15)
+    await page.waitFor(20)
+    await page.mouse.down()
+    await page.mouse.move(loc.x+25,loc.y+12,{steps:10})
+    await page.waitFor(13)
+    await page.mouse.move(loc.x+22,loc.y+12)
+    await page.waitFor(30)
+    await page.mouse.move(loc.x+32,loc.y+12,{steps:5})
+    await page.waitFor(20)
+    await page.mouse.move(loc.x+80,loc.y+20,{ steps: 20 })
+    await page.waitFor(33)
+    await page.mouse.move(loc.x+230,loc.y+19,{ steps: 16 })
+    await page.waitFor(23)
+    await page.mouse.move(loc.x+220,loc.y+12,{steps:5})
+    await page.waitFor(123)
+    await page.mouse.move(loc.x+305,loc.y+32,{steps:35})
+    await page.waitFor(23)
+    await page.mouse.down()
+}
+
+/*
+page：整个页面
+iframe:验证框
+btn:鼠标点击的按钮
+refresh:失败后点击重连的
+retries:失败后重试次数，如果超过还未成功就放弃
+*/
+// async function slider(page:any, ifram:any,btn:any,refresh:any,retries:any){
 async function slider(page:any){
     await page.waitFor(3000)
     const start = await page.waitForSelector('#sufei-dialog-content',{timeout:5000})
@@ -81,6 +121,7 @@ async function main(){
     // let key2 = args[1];
     // let url = encodeURI('https://s.taobao.com/search?ie=utf8&stats_click=search_radio_all%3A1&js=1&imgfile=&_input_charset=utf-8&wq=&suggest_query=&source=suggest&q='+key1+'+'+key2);
     await page.goto("https://login.taobao.com/member/login.jhtml");
+    await slider_login(page);
     //newPage是打开新tab页
     // const page2 = await browser.newPage();
     await page.goto("https://www.baidu.com");
